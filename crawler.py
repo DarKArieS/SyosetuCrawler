@@ -6,15 +6,15 @@ from urllib.parse import urljoin, urlparse
 import requests
 from bs4 import BeautifulSoup
 
-BASE_URL = "https://ncode.syosetu.com"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 }
+COOKIES = {"over18": "yes"}
 REQUEST_DELAY = 1.0  # seconds between requests
 
 
 def _fetch(url: str) -> BeautifulSoup:
-    resp = requests.get(url, headers=HEADERS, timeout=30)
+    resp = requests.get(url, headers=HEADERS, cookies=COOKIES, timeout=30)
     resp.raise_for_status()
     resp.encoding = "utf-8"
     return BeautifulSoup(resp.text, "lxml")
@@ -26,8 +26,9 @@ def _sanitize_filename(name: str) -> str:
 
 def get_chapter_links(novel_url: str) -> list[tuple[int, str, str]]:
     """Return list of (chapter_number, chapter_title, absolute_url) for all chapters."""
-    # Extract novel code from URL, e.g. "n9636x" from https://ncode.syosetu.com/n9636x/
-    novel_code = urlparse(novel_url).path.strip("/")
+    parsed = urlparse(novel_url)
+    base_url = f"{parsed.scheme}://{parsed.netloc}"
+    novel_code = parsed.path.strip("/")
     chapter_href_re = re.compile(rf"^/{re.escape(novel_code)}/(\d+)/?$")
 
     seen = set()
@@ -46,12 +47,12 @@ def get_chapter_links(novel_url: str) -> list[tuple[int, str, str]]:
             m = chapter_href_re.match(href)
             chapter_num = int(m.group(1))
             title = a.get_text(strip=True)
-            chapters.append((chapter_num, title, urljoin(BASE_URL, href)))
+            chapters.append((chapter_num, title, urljoin(base_url, href)))
 
         # Check for next page ("次へ")
         next_link = soup.find("a", string=re.compile(r"次へ"))
         if next_link and next_link.get("href"):
-            page_url = urljoin(BASE_URL, next_link["href"])
+            page_url = urljoin(base_url, next_link["href"])
         else:
             page_url = None
 

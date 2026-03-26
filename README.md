@@ -13,13 +13,13 @@ pip install -r requirements.txt
 ### 下載全部章節
 
 ```bash
-python main.py
+python main.py https://ncode.syosetu.com/n9636x/
 ```
 
 ### 下載指定章節範圍
 
 ```bash
-python main.py --chapters 1-10
+python main.py https://ncode.syosetu.com/n9636x/ --chapters 1-10
 ```
 
 ### 指定輸出資料夾
@@ -28,23 +28,23 @@ python main.py --chapters 1-10
 
 ```bash
 # 相對路徑（相對於目前工作目錄）
-python main.py --output my_output
-python main.py --output novels/薬屋のひとりごと
+python main.py https://ncode.syosetu.com/n9636x/ --output my_output
 
 # 絕對路徑
-python main.py --output C:/Users/aries/Documents/novels
+python main.py https://ncode.syosetu.com/n9636x/ --output C:/Users/aries/Documents/novels
 ```
 
 ### 組合使用
 
 ```bash
-python main.py --chapters 5-20 --output my_output
+python main.py https://ncode.syosetu.com/n9636x/ --chapters 5-20 --output my_output
 ```
 
 ## 參數說明
 
 | 參數 | 說明 | 預設值 |
 |---|---|---|
+| `url` | 小說頁面網址（必填） | — |
 | `--chapters START-END` | 下載指定章節範圍，例如 `1-10` | 全部章節 |
 | `--output DIR` | 輸出資料夾路徑 | 專案資料夾下的 `output/` |
 

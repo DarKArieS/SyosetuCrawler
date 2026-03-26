@@ -25,6 +25,10 @@ def parse_chapter_range(value: str) -> tuple[int, int] | None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Syosetu novel crawler")
     parser.add_argument(
+        "url",
+        help="Novel URL, e.g. https://ncode.syosetu.com/n9636x/",
+    )
+    parser.add_argument(
         "--chapters",
         metavar="START-END",
         type=parse_chapter_range,
@@ -39,7 +43,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     crawl(
-        novel_url="https://ncode.syosetu.com/n9636x/",
+        novel_url=args.url,
         output_dir=args.output,
         chapter_range=args.chapters,
     )
