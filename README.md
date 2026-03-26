@@ -61,6 +61,38 @@ output/
 
 檔名格式為 `{章節編號（四位數）}_{章節標題}.txt`。
 
+## 合併章節
+
+使用 `merge.py` 將多個章節 txt 合併為單一檔案，章節間以分隔線 (`========================================`) 區隔。
+
+### 合併全部章節
+
+```bash
+python merge.py
+```
+
+### 合併指定範圍
+
+```bash
+python merge.py --chapters 1-10
+```
+
+### 指定輸入資料夾與輸出檔案
+
+```bash
+python merge.py --input my_output --output result/全集.txt
+```
+
+### `merge.py` 參數說明
+
+| 參數 | 說明 | 預設值 |
+|---|---|---|
+| `--input DIR` | 章節 txt 所在資料夾 | 專案資料夾下的 `output/` |
+| `--output FILE` | 合併後的輸出檔案路徑 | `output/merged.txt` |
+| `--chapters START-END` | 僅合併指定範圍，例如 `1-10` | 全部章節 |
+
+---
+
 ## 備註
 
 - 若中途中斷，重新執行時會自動跳過已下載的章節
