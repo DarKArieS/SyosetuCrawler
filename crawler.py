@@ -61,6 +61,57 @@ def get_chapter_links(novel_url: str) -> list[tuple[int, str, str]]:
     return chapters
 
 
+def get_chapter_groups(novel_url: str) -> list[tuple[str | None, list[tuple[int, str]]]]:
+    """Return the table of contents grouped by arc (章).
+
+    Result is a list of (arc_title, [(chapter_number, chapter_title), ...]) in
+    page order. arc_title is None for chapters listed before any arc heading
+    (or for novels that have no arcs at all).
+    """
+    parsed = urlparse(novel_url)
+    base_url = f"{parsed.scheme}://{parsed.netloc}"
+    novel_code = parsed.path.strip("/")
+    chapter_href_re = re.compile(rf"^/{re.escape(novel_code)}/(\d+)/?$")
+
+    groups: list[tuple[str | None, list[tuple[int, str]]]] = []
+    seen: set[int] = set()
+    arc_title: str | None = None
+    page_url = novel_url
+
+    while page_url:
+        soup = _fetch(page_url)
+        time.sleep(REQUEST_DELAY)
+
+        # New layout: div.p-eplist / old layout: div.index_box
+        container = (
+            soup.find("div", class_="p-eplist")
+            or soup.find("div", class_="index_box")
+            or soup
+        )
+
+        for child in container.find_all(True, recursive=False):
+            classes = child.get("class") or []
+            if any("chapter-title" in c or c == "chapter_title" for c in classes):
+                arc_title = child.get_text(strip=True)
+                continue
+
+            for a in child.find_all("a", href=chapter_href_re):
+                num = int(chapter_href_re.match(a["href"]).group(1))
+                if num in seen:
+                    continue
+                seen.add(num)
+                entry = (num, a.get_text(strip=True))
+                if groups and groups[-1][0] == arc_title:
+                    groups[-1][1].append(entry)
+                else:
+                    groups.append((arc_title, [entry]))
+
+        next_link = soup.find("a", string=re.compile(r"次へ"))
+        page_url = urljoin(base_url, next_link["href"]) if next_link and next_link.get("href") else None
+
+    return groups
+
+
 def get_chapter_content(chapter_url: str) -> tuple[str, str]:
     """Return (title, body_text) for a chapter page."""
     soup = _fetch(chapter_url)

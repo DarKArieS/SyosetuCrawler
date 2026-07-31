@@ -92,9 +92,49 @@ python merge.py --input my_output --output result/全集.txt
 | `--chapters START-END` | 僅合併指定範圍，例如 `1-10` | 全部章節 |
 | `--number ` | 在文本最前方加入編號 | false |
 
+## 依分卷產生合併腳本
+
+`gen_merge_script.py` 會分析小說目錄頁的分卷（章）結構，把每一卷的話號範圍寫成一份 Windows 批次檔，省去手動查範圍的工夫。
+
+```bash
+python gen_merge_script.py https://ncode.syosetu.com/n9636x/
+```
+
+執行後會印出各卷範圍，並產生 `run_merge.bat`：
+
+```
+後宮編: 1-36 (36 chapters)
+宮廷編１: 37-56 (20 chapters)
+宮廷編２: 57-101 (45 chapters)
+...
+```
+
+```bat
+@echo off
+chcp 65001 >nul
+
+set chap=1-36
+.venv\Scripts\python.exe merge.py --chapters %chap% --output "output/%chap% 後宮編.txt"
+
+set chap=37-56
+.venv\Scripts\python.exe merge.py --chapters %chap% --output "output/%chap% 宮廷編１.txt"
+```
+
+接著直接執行 `run_merge.bat` 即可把已下載的章節依卷合併。
+
+### `gen_merge_script.py` 參數說明
+
+| 參數 | 說明 | 預設值 |
+|---|---|---|
+| `url` | 小說頁面網址（必填） | — |
+| `--output FILE` | 產生的腳本路徑 | 專案資料夾下的 `run_merge.bat` |
+| `--number` | 在腳本的 `merge.py` 指令加上 `--number` | false |
+
 ---
 
 ## 備註
 
 - 若中途中斷，重新執行時會自動跳過已下載的章節
 - 每次請求間隔 1 秒，避免對伺服器造成負擔
+- 目錄頁分頁（`?p=2`、`?p=3`…）會自動走訪完畢
+- 合併檔名含空白時，`--output` 的值需要用雙引號包起來
