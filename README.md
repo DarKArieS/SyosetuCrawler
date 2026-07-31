@@ -90,6 +90,7 @@ python merge.py --input my_output --output result/全集.txt
 | `--input DIR` | 章節 txt 所在資料夾 | 專案資料夾下的 `output/` |
 | `--output FILE` | 合併後的輸出檔案路徑 | `output/merged.txt` |
 | `--chapters START-END` | 僅合併指定範圍，例如 `1-10` | 全部章節 |
+| `--number ` | 在文本最前方加入編號 | false |
 
 ---
 
