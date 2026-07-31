@@ -1,10 +1,21 @@
 import argparse
+import re
 from pathlib import Path
 
 PROJECT_DIR = Path(__file__).parent
 
 
-def merge(input_dir: str, output_file: str, chapter_range: tuple[int, int] | None = None):
+def chapter_number(file: Path) -> int | None:
+    m = re.match(r"^(\d+)_", file.name)
+    return int(m.group(1)) if m else None
+
+
+def merge(
+    input_dir: str,
+    output_file: str,
+    chapter_range: tuple[int, int] | None = None,
+    number: bool = False,
+):
     src = Path(input_dir)
     if not src.exists():
         print(f"ERROR: Input directory not found: {src}")
@@ -16,7 +27,7 @@ def merge(input_dir: str, output_file: str, chapter_range: tuple[int, int] | Non
         start, end = chapter_range
         txt_files = [
             f for f in txt_files
-            if (m := __import__("re").match(r"^(\d+)_", f.name)) and start <= int(m.group(1)) <= end
+            if (n := chapter_number(f)) is not None and start <= n <= end
         ]
 
     if not txt_files:
@@ -29,6 +40,9 @@ def merge(input_dir: str, output_file: str, chapter_range: tuple[int, int] | Non
     with out.open("w", encoding="utf-8") as fp:
         for i, chapter_file in enumerate(txt_files):
             content = chapter_file.read_text(encoding="utf-8")
+            if number:
+                n = chapter_number(chapter_file)
+                fp.write(f"{n if n is not None else i + 1}. ")
             fp.write(content)
             if i < len(txt_files) - 1:
                 fp.write("\n\n" + "=" * 40 + "\n\n")
@@ -69,10 +83,16 @@ if __name__ == "__main__":
         default=None,
         help="Merge only a chapter range, e.g. 1-10 (default: all chapters)",
     )
+    parser.add_argument(
+        "--number",
+        action="store_true",
+        help="Prepend the chapter number to the front of each chapter's text",
+    )
     args = parser.parse_args()
 
     merge(
         input_dir=args.input,
         output_file=args.output,
         chapter_range=args.chapters,
+        number=args.number,
     )
